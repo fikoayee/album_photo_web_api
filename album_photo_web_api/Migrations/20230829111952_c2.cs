@@ -5,7 +5,7 @@
 namespace album_photo_web_api.Migrations
 {
     /// <inheritdoc />
-    public partial class c : Migration
+    public partial class c2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -12,8 +12,8 @@ using album_photo_web_api.Data;
 namespace album_photo_web_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230829103157_c")]
-    partial class c
+    [Migration("20230829111952_c2")]
+    partial class c2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

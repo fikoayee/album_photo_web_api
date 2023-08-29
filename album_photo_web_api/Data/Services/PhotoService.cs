@@ -19,6 +19,20 @@ namespace album_photo_web_api.Data.Services
             };
             _context.Photos.Add(newPhoto);
             _context.SaveChanges();
+
+            if (photo.AlbumId != null)
+            {
+                foreach (var albumId in photo.AlbumId)
+                {
+                    var newPhotoAlbum = new AlbumPhoto()
+                    {
+                        PhotoId = newPhoto.Id,
+                        AlbumId = albumId
+                    };
+                    _context.AlbumsPhotos.Add(newPhotoAlbum);
+                    _context.SaveChanges();
+                }
+            }
         }
 
         public List<Photo> GetAllPhotos()

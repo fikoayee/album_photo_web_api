@@ -8,6 +8,7 @@ namespace album_photo_web_api.Data.ViewModels
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }
+        public List<int>? PhotoId { get; set; }
 
         //    public string? ImageURL { get; set; }
 
@@ -21,6 +22,14 @@ namespace album_photo_web_api.Data.ViewModels
         //    public List<int>? PhotosId { get; set; }
 
         //}
+    }
+
+    public class AlbumWithPhotosVM
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public List<string> PhotoNames { get; set; }
     }
 }
 

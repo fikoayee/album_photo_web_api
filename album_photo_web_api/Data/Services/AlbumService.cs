@@ -8,7 +8,7 @@ namespace album_photo_web_api.Data.Services
         private AppDbContext _context;
         public AlbumService(AppDbContext context)
         {
-            _context = context; 
+            _context = context;
         }
 
         public void AddAlbum(AlbumVM album)
@@ -16,28 +16,23 @@ namespace album_photo_web_api.Data.Services
             var newAlbum = new Album()
             {
                 Name = album.Name,
-                //AuthorId = album.AuthorId,
-                //Access = album.Access,
-                //ImageName = album.ImageName,
-                //PhotosId = album.PhotosId
-
             };
             _context.Albums.Add(newAlbum);
             _context.SaveChanges();
 
-            //if (album.PhotosId != null)
-            //{
-            //    foreach (var photoId in album.PhotosId)
-            //    {
-            //        var newPhotoAlbum = new AlbumPhoto()
-            //        {
-            //            PhotoId = photoId,
-            //            AlbumId = newAlbum.Id
-            //        };
-            //        _context.AlbumsPhotos.Add(newPhotoAlbum);
-            //        _context.SaveChanges();
-            //    }
-            //}
+            if (album.PhotoId != null)
+            {
+                foreach (var photoId in album.PhotoId)
+                {
+                    var newPhotoAlbum = new AlbumPhoto()
+                    {
+                        PhotoId = photoId,
+                        AlbumId = newAlbum.Id
+                    };
+                    _context.AlbumsPhotos.Add(newPhotoAlbum);
+                    _context.SaveChanges();
+                }
+            }
         }
 
         public List<Album> GetAllAlbums()
@@ -45,9 +40,15 @@ namespace album_photo_web_api.Data.Services
             return _context.Albums.ToList();
 
         }
-        public Album GetAlbumById(int albumId)
+        public AlbumWithPhotosVM GetAlbumById(int albumId)
         {
-            return _context.Albums.FirstOrDefault(c => c.Id == albumId);
+            var albumWithPhotos = _context.Albums.Where(p => p.Id == albumId).Select(album => new AlbumWithPhotosVM()
+            {
+                Name = album.Name,
+                PhotoNames = album.AlbumsPhotos.Select(p => p.Photo.Name).ToList()
+            }).FirstOrDefault();
+
+            return albumWithPhotos;
         }
         public Album UpdateAlbumById(int albumId, AlbumVM album)
         {
@@ -70,5 +71,53 @@ namespace album_photo_web_api.Data.Services
             }
         }
 
+        /////////////
+        ///
+        public void MovePhotos(int currentAlbumId, List<int> photoIds, int destinationAlbumId)
+        {
+            var albumCurr = _context.Albums.FirstOrDefault(a => a.Id == currentAlbumId);
+
+            foreach (var photoId in photoIds)
+            {
+
+                var deleteAlbumPhoto = GetAlbumPhotoByIds(currentAlbumId, photoId);
+
+                var newAlbumPhoto = new AlbumPhoto()
+                {
+                    AlbumId = destinationAlbumId,
+                    PhotoId = photoId,
+                };
+                _context.AlbumsPhotos.Add(newAlbumPhoto);
+                _context.AlbumsPhotos.Remove(deleteAlbumPhoto);
+                _context.SaveChanges();
+            }
+        }
+        public AlbumPhoto GetAlbumPhotoByIds(int albumId, int photoId)
+        {
+            var albumPhoto = _context.AlbumsPhotos.Where(p => p.PhotoId == photoId && p.AlbumId == albumId).FirstOrDefault();
+            return albumPhoto;
+        }
+        public void RemovePhotoByIds(int albumId, List<int> photoIds)
+        {
+            foreach (var photoId in photoIds)
+            {
+                var deleteAlbumPhoto = GetAlbumPhotoByIds(albumId, photoId);
+                _context.AlbumsPhotos.Remove(deleteAlbumPhoto);
+                _context.SaveChanges();
+            }
+        }
+        public void AddPhotoByIds(int albumId, List<int> photoIds)
+        {
+            foreach (var photoId in photoIds)
+            {
+                var newAlbumphoto = new AlbumPhoto()
+                {
+                    AlbumId = albumId,
+                    PhotoId = photoId,
+                };
+                _context.Add(newAlbumphoto);
+                _context.SaveChanges();
+            }
+        }
     }
 }
