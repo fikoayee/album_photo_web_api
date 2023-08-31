@@ -37,21 +37,14 @@ namespace album_photo_web_api.Data.Services
                 }
             }
         }
-
         public List<Album> GetAllAlbums()
         {
             return _context.Albums.ToList();
 
         }
-        public AlbumWithPhotosVM GetAlbumById(int albumId)
+        public Album GetAlbumById(int albumId)
         {
-            var albumWithPhotos = _context.Albums.Where(p => p.Id == albumId).Select(album => new AlbumWithPhotosVM()
-            {
-                Name = album.Name,
-                PhotoNames = album.AlbumsPhotos.Select(p => p.Photo.Name).ToList()
-            }).FirstOrDefault();
-
-            return albumWithPhotos;
+            return _context.Albums.FirstOrDefault(p => p.Id == albumId);
         }
         public Album UpdateAlbumById(int albumId, AlbumVM album)
         {
@@ -59,7 +52,8 @@ namespace album_photo_web_api.Data.Services
             if (albumUpd != null)
             {
                 albumUpd.Name = album.Name;
-
+                albumUpd.Access = album.Access;
+                albumUpd.ImageFile = album.ImageFile;
                 _context.SaveChanges();
             }
             return albumUpd;
@@ -74,55 +68,11 @@ namespace album_photo_web_api.Data.Services
             }
         }
 
-        /////////////
-        ///
-        public void MovePhotos(int currentAlbumId, List<int> photoIds, int destinationAlbumId)
-        {
-            var albumCurr = _context.Albums.FirstOrDefault(a => a.Id == currentAlbumId);
-
-            foreach (var photoId in photoIds)
-            {
-
-                var deleteAlbumPhoto = GetAlbumPhotoByIds(currentAlbumId, photoId);
-
-                var newAlbumPhoto = new AlbumPhoto()
-                {
-                    AlbumId = destinationAlbumId,
-                    PhotoId = photoId,
-                };
-                _context.AlbumsPhotos.Add(newAlbumPhoto);
-                _context.AlbumsPhotos.Remove(deleteAlbumPhoto);
-                _context.SaveChanges();
-            }
-        }
         public AlbumPhoto GetAlbumPhotoByIds(int albumId, int photoId)
         {
             var albumPhoto = _context.AlbumsPhotos.Where(p => p.PhotoId == photoId && p.AlbumId == albumId).FirstOrDefault();
             return albumPhoto;
         }
-        public void RemovePhotoByIds(int albumId, List<int> photoIds)
-        {
-            foreach (var photoId in photoIds)
-            {
-                var deleteAlbumPhoto = GetAlbumPhotoByIds(albumId, photoId);
-                _context.AlbumsPhotos.Remove(deleteAlbumPhoto);
-                _context.SaveChanges();
-            }
-        }
-        public void AddPhotoByIds(int albumId, List<int> photoIds)
-        {
-            foreach (var photoId in photoIds)
-            {
-                var newAlbumphoto = new AlbumPhoto()
-                {
-                    AlbumId = albumId,
-                    PhotoId = photoId,
-                };
-                _context.Add(newAlbumphoto);
-                _context.SaveChanges();
-            }
-        }
-
         public async Task<string> UploadPhoto(IFormFile iFormFile)
         {
             string fileName = "";
@@ -140,6 +90,40 @@ namespace album_photo_web_api.Data.Services
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+        public void MovePhotos(int currentAlbumId, int destinationAlbumId, List<int> photoIds)
+        {
+            foreach (var photoId in photoIds)
+            {
+                var updateAlbumPhoto = GetAlbumPhotoByIds(currentAlbumId, photoId);
+
+                updateAlbumPhoto.AlbumId = destinationAlbumId;
+                _context.AlbumsPhotos.Update(updateAlbumPhoto);
+                _context.SaveChanges();
+            }
+        }
+
+        public void AddPhotoByIds(int albumId, List<int> photoIds)
+        {
+            foreach (var photoId in photoIds)
+            {
+                var newAlbumphoto = new AlbumPhoto()
+                {
+                    AlbumId = albumId,
+                    PhotoId = photoId,
+                };
+                _context.Add(newAlbumphoto);
+                _context.SaveChanges();
+            }
+        }
+        public void RemovePhotoByIds(int albumId, List<int> photoIds)
+        {
+            foreach (var photoId in photoIds)
+            {
+                var deleteAlbumPhoto = GetAlbumPhotoByIds(albumId, photoId);
+                _context.AlbumsPhotos.Remove(deleteAlbumPhoto);
+                _context.SaveChanges();
             }
         }
 

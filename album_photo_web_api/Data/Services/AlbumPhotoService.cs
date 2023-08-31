@@ -1,9 +1,10 @@
-﻿using album_photo_web_api.Data.ViewModels;
+﻿using album_photo_web_api.Data.Interfaces;
+using album_photo_web_api.Data.ViewModels;
 using album_photo_web_api.Models;
 
 namespace album_photo_web_api.Data.Services
 {
-    public class AlbumPhotoService
+    public class AlbumPhotoService : IAlbumPhotoService
     {
         private AppDbContext _context;
         public AlbumPhotoService(AppDbContext context)

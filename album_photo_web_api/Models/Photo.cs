@@ -12,7 +12,9 @@ namespace album_photo_web_api.Models
         public int Id { get; set; }
         public string Name { get; set; }
         
-
+        public string Tags { get; set; }
+        public string Camera { get; set; }
+        public AccessLevel Access { get; set; }
         // relationship photos >--< albums 
         public List<AlbumPhoto>? AlbumsPhotos { get; set; }
         

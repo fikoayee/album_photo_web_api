@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using album_photo_web_api.Data.Services;
 using album_photo_web_api.Data.ViewModels;
 using album_photo_web_api.Models;
+using album_photo_web_api.Data.Interfaces;
 
 namespace album_photo_web_api.Controllers
 {
@@ -17,15 +18,9 @@ namespace album_photo_web_api.Controllers
         }
 
         [HttpPost("add-photo")]
-        public IActionResult AddPhoto([FromBody] PhotoVM photo)
+        public IActionResult AddPhoto([FromForm] PhotoVM photo)
         {
-            _photoService.AddPhoto(photo);
-            return Ok();
-        }
-
-        [HttpPost("add-photo-tags")]
-        public IActionResult AddPhotoTags(PhotoVM photo)
-        {
+            _photoService.UploadPhoto(photo.ImageFile);
             _photoService.AddPhoto(photo);
             return Ok();
         }
@@ -38,14 +33,14 @@ namespace album_photo_web_api.Controllers
         }
 
         [HttpGet("get-photo-by-id/{photoId}")]
-        public IActionResult GetPhotoById(int albumId)
+        public IActionResult GetPhotoById(int photoId)
         {
-            var photo = _photoService.GetPhotoById(albumId);
+            var photo = _photoService.GetPhotoById(photoId);
             return Ok(photo);
         }
 
         [HttpPut("update-photo-by-id/{photoId}")]
-        public IActionResult UpdatePhotoById(int photoId, [FromBody] PhotoVM photo)
+        public IActionResult UpdatePhotoById(int photoId, [FromForm] PhotoUpdateVM photo)
         {
             var photoUpd = _photoService.UpdatePhotoById(photoId, photo);
             return Ok(photoUpd);

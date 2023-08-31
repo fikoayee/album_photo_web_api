@@ -16,13 +16,6 @@ namespace album_photo_web_api.Controllers
             _albumService = albumService;
         }
 
-        [HttpPost("add-album")]
-        public IActionResult AddAlbum([FromBody] AlbumVM album)
-        {
-            _albumService.AddAlbum(album);
-            return Ok();
-        }
-
         [HttpGet("get-all-albums")]
         public IActionResult GetAlbums()
         {
@@ -38,7 +31,7 @@ namespace album_photo_web_api.Controllers
         }
 
         [HttpPut("update-album-by-id/{albumId}")]
-        public IActionResult UpdateAlbumById(int albumId, [FromBody] AlbumVM album)
+        public IActionResult UpdateAlbumById(int albumId, [FromForm] AlbumVM album)
         {
             var albumUpd = _albumService.UpdateAlbumById(albumId, album);
             return Ok(albumUpd);
@@ -49,11 +42,29 @@ namespace album_photo_web_api.Controllers
             _albumService.DeleteAlbumById(albumId);
             return Ok();
         }
-        [HttpPost("add-album-with-photo")]
+        [HttpPost("add-album")]
         public IActionResult AddAlbumWithPhoto([FromForm] AlbumVM album)
         {
             _albumService.UploadPhoto(album.ImageFile);
             _albumService.AddAlbum(album);
+            return Ok();
+        }
+        [HttpPut("move-photos-between-albums")]
+        public IActionResult MovePhotosBetweenAlbums(int currentAlbumId, int destinationAlbumId, List<int> PhotoIds)
+        {
+            _albumService.MovePhotos(currentAlbumId, destinationAlbumId, PhotoIds);
+            return Ok();
+        }
+        [HttpDelete("remove-photos-by-ids")]
+        public IActionResult RemovePhotosByIds(int albumId, List<int> photoIds)
+        {
+            _albumService.RemovePhotoByIds(albumId, photoIds);
+            return Ok();
+        }
+        [HttpPost("add-photos-by-ids")]
+        public IActionResult AddPhotosByIds(int albumId, List<int> photoIds)
+        {
+            _albumService.AddPhotoByIds(albumId, photoIds);
             return Ok();
         }
     }
