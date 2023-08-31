@@ -49,5 +49,12 @@ namespace album_photo_web_api.Controllers
             _albumService.DeleteAlbumById(albumId);
             return Ok();
         }
+        [HttpPost("add-album-with-photo")]
+        public IActionResult AddAlbumWithPhoto([FromForm] AlbumVM album)
+        {
+            _albumService.UploadPhoto(album.ImageFile);
+            _albumService.AddAlbum(album);
+            return Ok();
+        }
     }
 }

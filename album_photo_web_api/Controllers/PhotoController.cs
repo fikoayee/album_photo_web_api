@@ -23,6 +23,13 @@ namespace album_photo_web_api.Controllers
             return Ok();
         }
 
+        [HttpPost("add-photo-tags")]
+        public IActionResult AddPhotoTags(PhotoVM photo)
+        {
+            _photoService.AddPhoto(photo);
+            return Ok();
+        }
+
         [HttpGet("get-all-photos")]
         public IActionResult GetPhotos()
         {

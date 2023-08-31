@@ -1,6 +1,7 @@
 ﻿using album_photo_web_api.Data.ViewModels;
 using album_photo_web_api.Models;
-
+using static Azure.Core.HttpHeader;
+using album_photo_web_api.Helper;
 namespace album_photo_web_api.Data.Services
 {
     public class AlbumService
@@ -16,6 +17,8 @@ namespace album_photo_web_api.Data.Services
             var newAlbum = new Album()
             {
                 Name = album.Name,
+                Access = album.Access,
+                ImageFile = album.ImageFile,
             };
             _context.Albums.Add(newAlbum);
             _context.SaveChanges();
@@ -119,5 +122,26 @@ namespace album_photo_web_api.Data.Services
                 _context.SaveChanges();
             }
         }
+
+        public async Task<string> UploadPhoto(IFormFile iFormFile)
+        {
+            string fileName = "";
+            try
+            {
+                FileInfo _FileInfo = new FileInfo(iFormFile.FileName);
+                fileName = iFormFile.FileName + _FileInfo.Extension;
+                var getFilePath = CommonPath.GetFilePath(fileName);
+                using (var _FileStream = new FileStream(getFilePath, FileMode.Create))
+                {
+                    await iFormFile.CopyToAsync(_FileStream);
+                }
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
     }
 }

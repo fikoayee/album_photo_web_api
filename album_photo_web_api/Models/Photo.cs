@@ -11,8 +11,7 @@ namespace album_photo_web_api.Models
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }
-        public string? Details { get; set; }
-
+        
 
         // relationship photos >--< albums 
         public List<AlbumPhoto>? AlbumsPhotos { get; set; }
