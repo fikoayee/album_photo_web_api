@@ -16,8 +16,8 @@ namespace album_photo_web_api.Models
         public Photo? Photo { get; set; }
 
         // relationship user <--< comments
-        public int? UserId { get;set; }
-        public User User { get; set; }
+        //public int? UserId { get;set; }
+        //public User User { get; set; }
 
     }
 }

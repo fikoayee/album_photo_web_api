@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using album_photo_web_api.Data.Services;
 using album_photo_web_api.Data.ViewModels;
 using album_photo_web_api.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace album_photo_web_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AlbumController : ControllerBase
     {
         public AlbumService _albumService;

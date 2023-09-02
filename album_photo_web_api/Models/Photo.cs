@@ -22,7 +22,7 @@ namespace album_photo_web_api.Models
         public List<Comment>? Comments { get; set; }
 
         // relationship user <--< photos
-        public int? UserId { get; set; }
-        public User User { get; set; }
+        //public int? UserId { get; set; }
+        //public User User { get; set; }
     }
 }

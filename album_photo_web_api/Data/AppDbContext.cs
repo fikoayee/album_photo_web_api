@@ -1,4 +1,5 @@
 ﻿using album_photo_web_api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -6,7 +7,7 @@ using System.Xml.Linq;
 
 namespace album_photo_web_api.Data
 {
-    public class AppDbContext :DbContext
+    public class AppDbContext :IdentityDbContext<User>
     {
         public DbSet<Photo> Photos { get; set; }
         public DbSet<Album> Albums { get; set; }
@@ -14,6 +15,7 @@ namespace album_photo_web_api.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Rate> Rates { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
