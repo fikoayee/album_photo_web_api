@@ -15,6 +15,9 @@ namespace album_photo_web_api.Models
         public string Tags { get; set; }
         public string Camera { get; set; }
         public AccessLevel Access { get; set; }
+        [NotMapped]
+        public IFormFile ImageFile { get; set; }
+        public string ImageName { get; set; }
         // relationship photos >--< albums 
         public List<AlbumPhoto>? AlbumsPhotos { get; set; }
         

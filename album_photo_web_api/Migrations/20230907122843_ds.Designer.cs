@@ -12,8 +12,8 @@ using album_photo_web_api.Data;
 namespace album_photo_web_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230831185343_d")]
-    partial class d
+    [Migration("20230907122843_ds")]
+    partial class ds
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -109,6 +109,10 @@ namespace album_photo_web_api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -158,7 +162,7 @@ namespace album_photo_web_api.Migrations
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateExpired")
+                    b.Property<DateTime>("DateExpire")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsRevoked")

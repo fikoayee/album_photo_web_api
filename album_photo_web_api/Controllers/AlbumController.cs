@@ -47,7 +47,6 @@ namespace album_photo_web_api.Controllers
         [HttpPost("add-album")]
         public IActionResult AddAlbumWithPhoto([FromForm] AlbumVM album)
         {
-            _albumService.UploadPhoto(album.ImageFile);
             _albumService.AddAlbum(album);
             return Ok();
         }

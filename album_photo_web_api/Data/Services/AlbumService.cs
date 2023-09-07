@@ -18,7 +18,6 @@ namespace album_photo_web_api.Data.Services
             {
                 Name = album.Name,
                 Access = album.Access,
-                ImageFile = album.ImageFile,
             };
             _context.Albums.Add(newAlbum);
             _context.SaveChanges();
@@ -53,7 +52,6 @@ namespace album_photo_web_api.Data.Services
             {
                 albumUpd.Name = album.Name;
                 albumUpd.Access = album.Access;
-                albumUpd.ImageFile = album.ImageFile;
                 _context.SaveChanges();
             }
             return albumUpd;
@@ -72,25 +70,6 @@ namespace album_photo_web_api.Data.Services
         {
             var albumPhoto = _context.AlbumsPhotos.Where(p => p.PhotoId == photoId && p.AlbumId == albumId).FirstOrDefault();
             return albumPhoto;
-        }
-        public async Task<string> UploadPhoto(IFormFile iFormFile)
-        {
-            string fileName = "";
-            try
-            {
-                FileInfo _FileInfo = new FileInfo(iFormFile.FileName);
-                fileName = iFormFile.FileName + _FileInfo.Extension;
-                var getFilePath = CommonPath.GetFilePath(fileName);
-                using (var _FileStream = new FileStream(getFilePath, FileMode.Create))
-                {
-                    await iFormFile.CopyToAsync(_FileStream);
-                }
-                return fileName;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
         }
         public void MovePhotos(int currentAlbumId, int destinationAlbumId, List<int> photoIds)
         {
