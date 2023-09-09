@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using album_photo_web_api.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace album_photo_web_api.Data.ViewModels
 {
@@ -18,4 +20,5 @@ namespace album_photo_web_api.Data.ViewModels
         public string Camera { get; set; }
         public AccessLevel Access { get; set; }
     }
+
 }

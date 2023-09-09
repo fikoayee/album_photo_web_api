@@ -57,10 +57,17 @@ namespace album_photo_web_api.Controllers
 
         private async Task<AuthenticationResultVM> GenerateJwtToken(User user)
         {
+            string roleType = "USER";
+            if(user.UserName == "admin")
+            {
+                roleType = "ADMIN";
+            }
+            
             var authClaims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Role, roleType),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
@@ -72,7 +79,7 @@ namespace album_photo_web_api.Controllers
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:Issuer"],
                 audience: _configuration["JWT:Audience"],
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.Now.AddMinutes(10),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigninKey, SecurityAlgorithms.HmacSha256)
                 );
@@ -84,8 +91,8 @@ namespace album_photo_web_api.Controllers
                 JwtId = token.Id,
                 IsRevoked = false,
                 UserId = user.Id,
-                DateAdded = DateTime.UtcNow,
-                DateExpire = DateTime.UtcNow.AddMonths(6),
+                DateAdded = DateTime.Now,
+                DateExpire = DateTime.Now.AddMonths(6),
                 Token = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString()
             };
             await _context.RefreshTokens.AddAsync(refreshToken);

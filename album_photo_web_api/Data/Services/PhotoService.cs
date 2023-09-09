@@ -1,14 +1,17 @@
 ﻿using album_photo_web_api.Data.Interfaces;
 using album_photo_web_api.Data.ViewModels;
+using album_photo_web_api.Dto;
 using album_photo_web_api.Helper;
 using album_photo_web_api.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Security.Claims;
 
 namespace album_photo_web_api.Data.Services
 {
@@ -22,7 +25,7 @@ namespace album_photo_web_api.Data.Services
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public async void AddPhoto(PhotoVM photo)
+        public async void AddPhoto(PhotoVM photo, string userId)
         {
             string wwwRootPath = _webHostEnvironment.WebRootPath;
             string fileName = Path.GetFileName(photo.ImageFile.FileName);
@@ -37,8 +40,10 @@ namespace album_photo_web_api.Data.Services
                 Tags = photo.Tags.ToString(),
                 ImageFile = photo.ImageFile,
                 ImageName = fileName,
+                UserId = userId,
+                
             };
-
+            
             newPhoto.ImageName = fileName;
             string path = Path.Combine(wwwRootPath + @"\uploads\", fileName);
             string pathThumbnails = Path.Combine(wwwRootPath + @"\uploads\thumbnails", fileName);
@@ -50,16 +55,49 @@ namespace album_photo_web_api.Data.Services
             _context.Photos.Add(newPhoto);
             _context.SaveChanges();
         }
-        public List<Photo> GetAllPhotos()
+        public List<PhotoDto> GetAllPhotos()
         {
-            return _context.Photos.ToList();
-
+            var photos = new List<PhotoDto>();
+            foreach (var p in _context.Photos.Include(u => u.User).ToList())
+            {
+                PhotoDto obj = new PhotoDto()
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    //Tags = p.Tags,
+                    Camera = p.Camera,
+                    Access = p.Access,
+                    ImageName = p.ImageName,
+                    UpVotes = p.UpVotes,
+                    DownVotes = p.DownVotes,
+                    Comments = p.Comments,
+                    User = p.User.UserName,
+                    UserId = p.UserId,
+                };
+                photos.Add(obj);
+            }
+            return (photos);
         }
-        public Photo GetPhotoById(int photoId)
+        public PhotoDto GetPhotoById(int photoId)
         {
-            return _context.Photos.FirstOrDefault(c => c.Id == photoId);
+            var photo = _context.Photos.Include(u => u.User).FirstOrDefault(c => c.Id == photoId);
+            PhotoDto obj = new PhotoDto()
+            {
+                Id = photo.Id,
+                Name = photo.Name,
+                //Tags = photo.Tags,
+                Camera = photo.Camera,
+                Access = photo.Access,
+                ImageName = photo.ImageName,
+                UpVotes = photo.UpVotes,
+                DownVotes = photo.DownVotes,
+                Comments = photo.Comments,
+                User = photo.User.UserName,
+                UserId = photo.UserId,
+            };
+            return (obj);
         }
-        public Photo UpdatePhotoById(int photoId, PhotoUpdateVM photo)
+        public PhotoDto UpdatePhotoById(int photoId, PhotoUpdateVM photo, string userId)
         {
             var photoUpd = _context.Photos.FirstOrDefault(c => c.Id == photoId);
             if (photoUpd != null)
@@ -67,10 +105,15 @@ namespace album_photo_web_api.Data.Services
                 photoUpd.Name = photo.Name;
                 photoUpd.Access = photo.Access;
                 photoUpd.Camera = photo.Camera;
+                photoUpd.UserId = userId;
                 photoUpd.Tags = photo.Tags.ToString();
+
                 _context.SaveChanges();
             }
-            return photoUpd;
+
+            var obj = GetPhotoById(photoId);
+
+            return obj;
         }
         public void DeletePhotoById(int photoId)
         {
@@ -129,14 +172,17 @@ namespace album_photo_web_api.Data.Services
         }
         public string GetNextFileName(string fileName, string extension)
         {
+            string wwwRootPath = _webHostEnvironment.WebRootPath;
+            string path = Path.Combine(wwwRootPath + @"\uploads\", fileName);
 
             int i = 0;
-            while (File.Exists(fileName))
+            while (File.Exists(path))
             {
                 if (i == 0)
                     fileName = fileName.Replace(extension, "(" + ++i + ")" + extension);
                 else
                     fileName = fileName.Replace("(" + i + ")" + extension, "(" + ++i + ")" + extension);
+                path = Path.Combine(wwwRootPath + @"\uploads\", fileName);
             }
             return fileName;
         }
@@ -156,22 +202,51 @@ namespace album_photo_web_api.Data.Services
                 return "Changed access level to public";
             }
         }
-
-        public List<Photo> GetPhotosByAuthorName(string authorName)
+        public List<PhotoDto> GetPhotosByAuthorName(string authorName)
         {
-            throw new NotImplementedException();
-        }
+            var user = _context.Users.FirstOrDefault(u => u.UserName == authorName);
+            var data = GetAllPhotos().Where(p => p.UserId == user.Id).ToList();
 
-        public List<Photo> GetPhotosByAuthorId(int authorId)
+            return data;
+        }
+        public List<PhotoDto> GetPhotosByAuthorId(string authorId)
         {
-            throw new NotImplementedException();
+            var data = GetAllPhotos().Where(p => p.UserId == authorId).ToList();
+            return data;
         }
-
-        public List<Photo> GetPhotosByName(string photoName)
+        public List<PhotoDto> GetPhotosByName(string photoName)
         {
             var data = GetAllPhotos();
             var dataFiltered = data.Where(n => n.Name.IndexOf(photoName, StringComparison.OrdinalIgnoreCase) != -1);
             return dataFiltered.ToList();
+            
+        }
+        public Photo GetPhotoByFileName(string fileName)
+        {
+            return _context.Photos.FirstOrDefault(c => c.ImageName == fileName);
+        }
+        public bool HasAccess(int photoId, string userId, bool isAdmin)
+        {
+            var photo = GetPhotoById(photoId);
+
+            if (isAdmin || (photo.Access == AccessLevel.Private && userId == photo.UserId) || photo.Access == AccessLevel.Public)
+                return true;
+            else
+                return false;
+        }
+        public bool HasPriveleges(int photoId, string userId, bool isAdmin)
+        {
+            var photo = GetPhotoById(photoId);
+
+            if (isAdmin || userId == photo.UserId)
+                return true;
+            else
+                return false;
+        }
+        public string GetUserIdByPhotoId(int photoId)
+        {
+            var photo = GetPhotoById(photoId);
+            return photo.UserId;
         }
     }
 }

@@ -28,6 +28,7 @@ builder.Services.AddTransient<PhotoService>();
 
 // Add Identity
 builder.Services.AddIdentity<User, IdentityRole>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 // Add Authentication & JWT Bearer
@@ -101,5 +102,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseSwaggerUI(); // check if necesasrry!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+AppDbSeeder.SeedUsersAndRolesAsync(app).Wait(); // full fill database w data for admins/users/roles
 
 app.Run();

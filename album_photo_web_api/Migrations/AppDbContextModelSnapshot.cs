@@ -107,6 +107,9 @@ namespace album_photo_web_api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DownVotes")
+                        .HasColumnType("int");
+
                     b.Property<string>("ImageName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -115,14 +118,23 @@ namespace album_photo_web_api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("RatesId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Tags")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UpVotes")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RatesId");
 
                     b.HasIndex("UserId");
 
@@ -418,9 +430,19 @@ namespace album_photo_web_api.Migrations
 
             modelBuilder.Entity("album_photo_web_api.Models.Photo", b =>
                 {
-                    b.HasOne("album_photo_web_api.Models.User", null)
+                    b.HasOne("album_photo_web_api.Models.Rate", "Rates")
+                        .WithMany()
+                        .HasForeignKey("RatesId");
+
+                    b.HasOne("album_photo_web_api.Models.User", "User")
                         .WithMany("Photos")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rates");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("album_photo_web_api.Models.RefreshToken", b =>

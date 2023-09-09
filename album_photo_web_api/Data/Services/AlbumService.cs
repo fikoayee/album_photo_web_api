@@ -65,7 +65,6 @@ namespace album_photo_web_api.Data.Services
                 _context.SaveChanges();
             }
         }
-
         public AlbumPhoto GetAlbumPhotoByIds(int albumId, int photoId)
         {
             var albumPhoto = _context.AlbumsPhotos.Where(p => p.PhotoId == photoId && p.AlbumId == albumId).FirstOrDefault();
@@ -82,7 +81,6 @@ namespace album_photo_web_api.Data.Services
                 _context.SaveChanges();
             }
         }
-
         public void AddPhotoByIds(int albumId, List<int> photoIds)
         {
             foreach (var photoId in photoIds)
