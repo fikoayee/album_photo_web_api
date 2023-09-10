@@ -46,12 +46,18 @@ namespace album_photo_web_api.Controllers
         public IActionResult GetPhotoById(int photoId)
         {
             var photo = _photoService.GetPhotoById(photoId);
-            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            bool isAdmin = User.IsInRole("ADMIN");
+            if (photo == null)
+                return NotFound();
+            else
+            {
+                string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                bool isAdmin = User.IsInRole("ADMIN");
 
-            if (!_photoService.HasAccess(photoId, userId, isAdmin))
-                return BadRequest();
-            return Ok(photo);
+                if (!_photoService.HasAccess(photoId, userId, isAdmin))
+                    return Forbid();
+                return Ok(photo);
+            }
+           
         }
 
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
@@ -60,29 +66,47 @@ namespace album_photo_web_api.Controllers
         {
             string userId = _photoService.GetUserIdByPhotoId(photoId);
             bool isAdmin = User.IsInRole("ADMIN");
-            if (_photoService.HasPriveleges(photoId, userId, isAdmin))
+            string currUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!_photoService.PhotoExists(photoId))
             {
-                var photoUpd = _photoService.UpdatePhotoById(photoId, photo, userId);
-                return Ok(photoUpd);
+                return NotFound();
             }
             else
-                return BadRequest();
+            {
+                if (_photoService.HasPriveleges(photoId, currUserId, isAdmin))
+                {
+                    var photoUpd = _photoService.UpdatePhotoById(photoId, photo, userId);
+                    return Ok(photoUpd); ;
+                }
+                else
+                    return Forbid();
+            }
         }
         
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
         [HttpDelete("delete-photo-by-id/{photoId}")] // 2. Usuwanie zdjęć
         public IActionResult DeletePhotoById(int photoId)
         {
-            string userId = _photoService.GetUserIdByPhotoId(photoId);
             bool isAdmin = User.IsInRole("ADMIN");
+            string currUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (_photoService.HasPriveleges(photoId, userId, isAdmin))
+            if(!_photoService.PhotoExists(photoId))
             {
-                _photoService.DeletePhotoById(photoId);
-                return Ok();
+                return NotFound();
             }
             else
-                return BadRequest();
+            {
+                if (_photoService.HasPriveleges(photoId, currUserId, isAdmin))
+                {
+                    _photoService.DeletePhotoById(photoId);
+                    return Ok();
+                }
+                else
+                    return Forbid();
+            }
+            
+
+            
         }
 
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
@@ -101,8 +125,10 @@ namespace album_photo_web_api.Controllers
             var photo = _photoService.GetPhotoByFileName(fileName);
             string path = _photoService.GetPathByFileName(fileName);
 
-            if (!System.IO.File.Exists(path) || !_photoService.HasAccess(photo.Id, userId, isAdmin))
-                return BadRequest();
+            if (!System.IO.File.Exists(path))
+                return NotFound();
+            else if (!_photoService.HasAccess(photo.Id, userId, isAdmin))
+                return Forbid();
             else
             {
                 byte[] b = System.IO.File.ReadAllBytes(path);
@@ -118,8 +144,10 @@ namespace album_photo_web_api.Controllers
             var photo = _photoService.GetPhotoByFileName(fileName);
             string path = _photoService.GetPathByFileName(fileName);
 
-            if (!System.IO.File.Exists(path) || !_photoService.HasAccess(photo.Id, userId, isAdmin))
-                return BadRequest();
+            if (!System.IO.File.Exists(path))
+                return NotFound();
+            else if (!_photoService.HasAccess(photo.Id, userId, isAdmin))
+                return Forbid();
             else
             {
                 byte[] b = _photoService.DownloadPhoto(fileName);
@@ -134,26 +162,29 @@ namespace album_photo_web_api.Controllers
             var photo = _photoService.GetPhotoByFileName(fileName);
             string path = _photoService.GetPathByFileNameThumbnails(fileName);
 
-            if (!System.IO.File.Exists(path) || !_photoService.HasAccess(photo.Id, userId, isAdmin))
-                return BadRequest();
+            if (!System.IO.File.Exists(path))
+                return NotFound();
+            else if (!_photoService.HasAccess(photo.Id, userId, isAdmin))
+                return Forbid();
             else
             {
                 byte[] b = System.IO.File.ReadAllBytes(path);
                 return File(b, "image/jpg");
             }
         }
-        [HttpPatch("change-photo-access-level")]
-
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
+        [HttpPut("change-photo-access-level")]
         public IActionResult ChangeAccess(int photoId)
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             bool isAdmin = User.IsInRole("ADMIN");
 
-            if (_photoService.HasPriveleges(photoId, userId, isAdmin))
+            if (!_photoService.PhotoExists(photoId) == false)
+                return NotFound();
+            else if (_photoService.HasPriveleges(photoId, userId, isAdmin))
                 return Ok(_photoService.ChangeAccessById(photoId));
             else
-                return BadRequest();
+                return Forbid();
         }
         [HttpGet("get_photo(s)-by-name")]
         public IActionResult GetPhotosByName(string photoName)         // 5. Przeszukiwanie zdjęć na podstawie praw użytkownika (admin dostęp do wszystkiego)
@@ -162,10 +193,16 @@ namespace album_photo_web_api.Controllers
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var filteredPhotos = _photoService.GetPhotosByName(photoName);
 
-            if (isAdmin)
-                filteredPhotos = filteredPhotos;
-            else
-                filteredPhotos = filteredPhotos.Where(p => p.Access == Data.AccessLevel.Public || p.UserId == userId).ToList();
+            if(filteredPhotos.Count == 0)
+                return NotFound();
+            else 
+            {
+                if (isAdmin)
+                    filteredPhotos = filteredPhotos;
+                else
+                    filteredPhotos = filteredPhotos.Where(p => p.Access == Data.AccessLevel.Public || p.UserId == userId).ToList();
+            }
+            
 
             return Ok(filteredPhotos);
         }
@@ -176,28 +213,37 @@ namespace album_photo_web_api.Controllers
             bool isAdmin = User.IsInRole("ADMIN");
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var filteredPhotos = _photoService.GetPhotosByAuthorName(userName);
-
-            if (isAdmin)
-                filteredPhotos = filteredPhotos;
+            
+            if (filteredPhotos.Count == 0)
+                return NotFound();
             else
-                filteredPhotos = filteredPhotos.Where(p => p.Access == Data.AccessLevel.Public || p.UserId == userId).ToList();
+            {
+                if (isAdmin)
+                    filteredPhotos = filteredPhotos;
+                else
+                    filteredPhotos = filteredPhotos.Where(p => p.Access == Data.AccessLevel.Public || p.UserId == userId).ToList();
 
-            return Ok(filteredPhotos);
-
+                return Ok(filteredPhotos);
+            }
         }
-        [HttpGet("get-photos=by-user-id/{authorId}")]
+        [HttpGet("get-photos-by-user-id/{authorId}")]
         public IActionResult GetPhotosByUserId(string authorId)
         {
             bool isAdmin = User.IsInRole("ADMIN");
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var filteredPhotos = _photoService.GetPhotosByAuthorName(authorId);
+            var filteredPhotos = _photoService.GetPhotosByAuthorId(authorId);
 
-            if (isAdmin)
-                filteredPhotos = filteredPhotos;
+            if (filteredPhotos.Count == 0)
+                return NotFound();
             else
-                filteredPhotos = filteredPhotos.Where(p => p.Access == Data.AccessLevel.Public || p.UserId == userId).ToList();
+            {
+                if (isAdmin)
+                    filteredPhotos = filteredPhotos;
+                else
+                    filteredPhotos = filteredPhotos.Where(p => p.Access == Data.AccessLevel.Public || p.UserId == userId).ToList();
 
-            return Ok(filteredPhotos);
+                return Ok(filteredPhotos);
+            }
         }
 
 

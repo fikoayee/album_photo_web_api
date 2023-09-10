@@ -55,6 +55,21 @@ namespace album_photo_web_api.Data.Services
             _context.Photos.Add(newPhoto);
             _context.SaveChanges();
         }
+        public bool PhotoExists(int photoId)
+        {
+            var photo = _context.Photos.FirstOrDefault(c => c.Id == photoId);
+            if (photo == null)
+                return false;
+            else
+                return true;
+        }
+        private Photo GetPhotoByIdPriv (int photoId)
+        {
+            if (PhotoExists(photoId))
+                return _context.Photos.FirstOrDefault(c => c.Id == photoId);
+            else
+                return null;
+        }
         public List<PhotoDto> GetAllPhotos()
         {
             var photos = new List<PhotoDto>();
@@ -81,21 +96,27 @@ namespace album_photo_web_api.Data.Services
         public PhotoDto GetPhotoById(int photoId)
         {
             var photo = _context.Photos.Include(u => u.User).FirstOrDefault(c => c.Id == photoId);
-            PhotoDto obj = new PhotoDto()
+            if (photo == null)
+                return null;
+            else
             {
-                Id = photo.Id,
-                Name = photo.Name,
-                //Tags = photo.Tags,
-                Camera = photo.Camera,
-                Access = photo.Access,
-                ImageName = photo.ImageName,
-                UpVotes = photo.UpVotes,
-                DownVotes = photo.DownVotes,
-                Comments = photo.Comments,
-                User = photo.User.UserName,
-                UserId = photo.UserId,
-            };
-            return (obj);
+                PhotoDto obj = new PhotoDto()
+                {
+                    Id = photo.Id,
+                    Name = photo.Name,
+                    //Tags = photo.Tags,
+                    Camera = photo.Camera,
+                    Access = photo.Access,
+                    ImageName = photo.ImageName,
+                    UpVotes = photo.UpVotes,
+                    DownVotes = photo.DownVotes,
+                    Comments = photo.Comments,
+                    User = photo.User.UserName,
+                    UserId = photo.UserId,
+                };
+                return (obj);
+            }
+            
         }
         public PhotoDto UpdatePhotoById(int photoId, PhotoUpdateVM photo, string userId)
         {
@@ -188,8 +209,11 @@ namespace album_photo_web_api.Data.Services
         }
         public string ChangeAccessById(int photoId)
         {
-            var photo = GetPhotoById(photoId);
-            if (photo.Access == AccessLevel.Public)
+            var photo = GetPhotoByIdPriv(photoId);
+            
+            if (photo == null)
+                return null;
+            else if(photo.Access == AccessLevel.Public)
             {
                 photo.Access = AccessLevel.Private;
                 _context.SaveChanges();
@@ -205,9 +229,11 @@ namespace album_photo_web_api.Data.Services
         public List<PhotoDto> GetPhotosByAuthorName(string authorName)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserName == authorName);
-            var data = GetAllPhotos().Where(p => p.UserId == user.Id).ToList();
-
-            return data;
+            
+            if (user == null)
+                return null;
+            else 
+                return GetAllPhotos().Where(p => p.UserId == user.Id).ToList();
         }
         public List<PhotoDto> GetPhotosByAuthorId(string authorId)
         {
@@ -245,8 +271,11 @@ namespace album_photo_web_api.Data.Services
         }
         public string GetUserIdByPhotoId(int photoId)
         {
-            var photo = GetPhotoById(photoId);
-            return photo.UserId;
+            var photo = GetPhotoByIdPriv(photoId);
+            if (photo == null)
+                return null;
+            else 
+                return photo.UserId;
         }
     }
 }
