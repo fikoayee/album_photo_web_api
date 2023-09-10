@@ -10,6 +10,8 @@ using album_photo_web_api.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.NetworkInformation;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace album_photo_web_api.Controllers
 {
@@ -52,6 +54,7 @@ namespace album_photo_web_api.Controllers
             return Ok(photo);
         }
 
+        [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
         [HttpPut("update-photo-by-id/{photoId}")] // 3. Edycja opisów (TAGI, SZCZEGÓŁY, APARAT) // 4. Zmiana status zdjęcia (PRIV/PUBLIC)
         public IActionResult UpdatePhotoById(int photoId, [FromForm] PhotoUpdateVM photo)
         {
@@ -65,6 +68,8 @@ namespace album_photo_web_api.Controllers
             else
                 return BadRequest();
         }
+        
+        [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
         [HttpDelete("delete-photo-by-id/{photoId}")] // 2. Usuwanie zdjęć
         public IActionResult DeletePhotoById(int photoId)
         {
@@ -80,6 +85,7 @@ namespace album_photo_web_api.Controllers
                 return BadRequest();
         }
 
+        [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
         [HttpPost("add-photo")] // 1. Dodawanie zdjęć (TAG, AUTOR, SZCZEGÓŁY, APARAT, STATUS) // 1:4. Generowanie miniatur dla zdjęć
         public async Task<IActionResult> AddPhoto([FromForm] PhotoVM photo)
         {
@@ -137,6 +143,8 @@ namespace album_photo_web_api.Controllers
             }
         }
         [HttpPatch("change-photo-access-level")]
+
+        [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
         public IActionResult ChangeAccess(int photoId)
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

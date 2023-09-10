@@ -26,11 +26,31 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddTransient<AlbumService>();
 builder.Services.AddTransient<PhotoService>();
 
+
+// Token validation Parameters
+var tokenValidationParameters = new TokenValidationParameters()
+{
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JWT:Secret"])),
+
+    ValidateIssuer = true,
+    ValidIssuer = builder.Configuration["JWT:Issuer"],
+
+    ValidateAudience = true,
+    ValidAudience = builder.Configuration["JWT:Audience"],
+
+    ValidateLifetime = true,
+    ClockSkew = TimeSpan.Zero,
+};
+builder.Services.AddSingleton(tokenValidationParameters);
+
+
 // Add Identity
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
 // Add Authentication & JWT Bearer
 builder.Services.AddAuthentication(options =>
 {
@@ -41,17 +61,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.SaveToken = true;
     options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JWT:Secret"])),
-
-        ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["JWT:Issuer"],
-
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["JWT:Audience"]
-    };
+    options.TokenValidationParameters = tokenValidationParameters;
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
