@@ -13,5 +13,9 @@ namespace album_photo_web_api.Models
         public AccessLevel Access { get; set; }
         // relationship photos >--< albums
         public List<AlbumPhoto>? AlbumsPhotos { get; set; }
+        // relationship user ---< photos
+        public string UserId { get; set; }
+        [ForeignKey("UserId")]
+        public User User { get; set; }
     }
 }

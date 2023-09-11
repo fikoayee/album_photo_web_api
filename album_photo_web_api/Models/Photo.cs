@@ -31,7 +31,7 @@ namespace album_photo_web_api.Models
         public List<Comment>? Comments { get; set; }
 
         // relationship user ---< photos
-        public string? UserId { get; set; }
+        public string UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
     }

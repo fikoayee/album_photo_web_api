@@ -25,9 +25,14 @@ namespace album_photo_web_api.Data
             {
                 ap.Id,
             });
-            modelBuilder.Entity<AlbumPhoto>().HasOne(a => a.Album).WithMany(ap => ap.AlbumsPhotos).HasForeignKey(a => a.AlbumId);
             modelBuilder.Entity<AlbumPhoto>().HasOne(a => a.Photo).WithMany(ap => ap.AlbumsPhotos).HasForeignKey(a => a.PhotoId);
+            modelBuilder.Entity<AlbumPhoto>().HasOne(a => a.Album).WithMany(ap => ap.AlbumsPhotos).HasForeignKey(a => a.AlbumId);
 
+           
+
+
+            
+            
             // cascade delete comments/photo
             modelBuilder.Entity<Photo>()
          .HasMany<Comment>(c => c.Comments)

@@ -12,8 +12,8 @@ using album_photo_web_api.Data;
 namespace album_photo_web_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230909091623_osrr")]
-    partial class osrr
+    [Migration("20230911132156_d")]
+    partial class d
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -39,7 +39,13 @@ namespace album_photo_web_api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Albums");
                 });
@@ -52,10 +58,10 @@ namespace album_photo_web_api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AlbumId")
+                    b.Property<int?>("AlbumId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PhotoId")
+                    b.Property<int?>("PhotoId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -397,19 +403,26 @@ namespace album_photo_web_api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("album_photo_web_api.Models.Album", b =>
+                {
+                    b.HasOne("album_photo_web_api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("album_photo_web_api.Models.AlbumPhoto", b =>
                 {
                     b.HasOne("album_photo_web_api.Models.Album", "Album")
                         .WithMany("AlbumsPhotos")
-                        .HasForeignKey("AlbumId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AlbumId");
 
                     b.HasOne("album_photo_web_api.Models.Photo", "Photo")
                         .WithMany("AlbumsPhotos")
-                        .HasForeignKey("PhotoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PhotoId");
 
                     b.Navigation("Album");
 

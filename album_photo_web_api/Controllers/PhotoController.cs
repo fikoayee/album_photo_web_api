@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
+using Microsoft.IdentityModel.Tokens;
 
 namespace album_photo_web_api.Controllers
 {
@@ -104,9 +105,6 @@ namespace album_photo_web_api.Controllers
                 else
                     return Forbid();
             }
-            
-
-            
         }
 
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
@@ -186,7 +184,7 @@ namespace album_photo_web_api.Controllers
             else
                 return Forbid();
         }
-        [HttpGet("get_photo(s)-by-name")]
+        [HttpGet("get-photo(s)-by-name")]
         public IActionResult GetPhotosByName(string photoName)         // 5. Przeszukiwanie zdjęć na podstawie praw użytkownika (admin dostęp do wszystkiego)
         {
             bool isAdmin = User.IsInRole("ADMIN");
@@ -213,8 +211,10 @@ namespace album_photo_web_api.Controllers
             bool isAdmin = User.IsInRole("ADMIN");
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var filteredPhotos = _photoService.GetPhotosByAuthorName(userName);
-            
-            if (filteredPhotos.Count == 0)
+
+            if (filteredPhotos == null)
+                return NotFound();
+            else if (filteredPhotos.Count == 0)
                 return NotFound();
             else
             {

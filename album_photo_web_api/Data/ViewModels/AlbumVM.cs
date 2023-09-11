@@ -10,5 +10,11 @@ namespace album_photo_web_api.Data.ViewModels
         public List<int>? PhotoId { get; set; }
 
     }
+    public class AlbumUpdateVM
+    {
+        public string Name { get; set; }
+        public AccessLevel Access { get; set; }
+        
+    }
 }
 
