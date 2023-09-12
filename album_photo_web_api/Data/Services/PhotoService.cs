@@ -6,6 +6,7 @@ using album_photo_web_api.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using System.Drawing;
@@ -41,9 +42,9 @@ namespace album_photo_web_api.Data.Services
                 ImageFile = photo.ImageFile,
                 ImageName = fileName,
                 UserId = userId,
-                
+
             };
-            
+
             newPhoto.ImageName = fileName;
             string path = Path.Combine(wwwRootPath + @"\uploads\", fileName);
             string pathThumbnails = Path.Combine(wwwRootPath + @"\uploads\thumbnails", fileName);
@@ -63,7 +64,7 @@ namespace album_photo_web_api.Data.Services
             else
                 return true;
         }
-        private Photo GetPhotoByIdPriv (int photoId)
+        public Photo GetPhotoByIdPriv(int photoId)
         {
             if (PhotoExists(photoId))
                 return _context.Photos.FirstOrDefault(c => c.Id == photoId);
@@ -116,7 +117,7 @@ namespace album_photo_web_api.Data.Services
                 };
                 return (obj);
             }
-            
+
         }
         public PhotoDto UpdatePhotoById(int photoId, PhotoUpdateVM photo, string userId)
         {
@@ -138,9 +139,13 @@ namespace album_photo_web_api.Data.Services
         }
         public void DeletePhotoById(int photoId)
         {
-            var photoDel = _context.Photos.FirstOrDefault(c => c.Id == photoId);
+            var photoDel = _context.Photos.Include(c => c.Comments).FirstOrDefault(c => c.Id == photoId);
             if (photoDel != null)
             {
+                foreach (var comment in photoDel.Comments)
+                {
+                    _context.Comments.Remove(comment);
+                }
                 _context.Photos.Remove(photoDel);
                 _context.SaveChanges();
             }
@@ -210,10 +215,10 @@ namespace album_photo_web_api.Data.Services
         public string ChangeAccessById(int photoId)
         {
             var photo = GetPhotoByIdPriv(photoId);
-            
+
             if (photo == null)
                 return null;
-            else if(photo.Access == AccessLevel.Public)
+            else if (photo.Access == AccessLevel.Public)
             {
                 photo.Access = AccessLevel.Private;
                 _context.SaveChanges();
@@ -229,10 +234,10 @@ namespace album_photo_web_api.Data.Services
         public List<PhotoDto> GetPhotosByAuthorName(string authorName)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserName == authorName);
-            
+
             if (user == null)
                 return null;
-            else 
+            else
                 return GetAllPhotos().Where(p => p.UserId == user.Id).ToList();
         }
         public List<PhotoDto> GetPhotosByAuthorId(string authorId)
@@ -245,7 +250,7 @@ namespace album_photo_web_api.Data.Services
             var data = GetAllPhotos();
             var dataFiltered = data.Where(n => n.Name.IndexOf(photoName, StringComparison.OrdinalIgnoreCase) != -1);
             return dataFiltered.ToList();
-            
+
         }
         public Photo GetPhotoByFileName(string fileName)
         {
@@ -274,8 +279,47 @@ namespace album_photo_web_api.Data.Services
             var photo = GetPhotoByIdPriv(photoId);
             if (photo == null)
                 return null;
-            else 
+            else
                 return photo.UserId;
         }
+        public void AddUpvote(int photoId)
+        {
+            var photo = GetPhotoByIdPriv(photoId);
+            photo.UpVotes++;
+            _context.SaveChanges();
+            int num = photo.UpVotes;
+            num = photo.UpVotes;
+        }
+        public void AddDownvote(int photoId)
+        {
+            var photo = GetPhotoByIdPriv(photoId);
+            photo.DownVotes++;
+            _context.SaveChanges();
+            int num = photo.DownVotes;
+            num = photo.DownVotes;
+        }
+        public bool GetVoteDetails(string userId, int photoId)
+        {
+            var vote = _context.Rates.Where(x => x.AuthorId == userId && x.PhotoId == photoId).FirstOrDefault();
+            if (vote == null && PhotoExists(photoId) == true)
+            {
+                var newVote = new Rate()
+                {
+                    AuthorId = userId,
+                    PhotoId = photoId,
+                    IsRated = true,
+                };
+                _context.Rates.Add(newVote);
+                _context.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+
+        }
+
+
+
+
     }
 }

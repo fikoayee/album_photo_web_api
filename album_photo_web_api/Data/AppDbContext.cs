@@ -37,7 +37,7 @@ namespace album_photo_web_api.Data
             modelBuilder.Entity<Photo>()
          .HasMany<Comment>(c => c.Comments)
          .WithOne(s => s.Photo)
-         .OnDelete(DeleteBehavior.Cascade);
+         .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

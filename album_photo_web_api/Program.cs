@@ -25,6 +25,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddTransient<AlbumService>();
 builder.Services.AddTransient<PhotoService>();
+builder.Services.AddTransient<CommentService>();
 
 
 // Token validation Parameters

@@ -15,9 +15,10 @@ namespace album_photo_web_api.Models
         [ForeignKey("PhotoId")]
         public Photo? Photo { get; set; }
 
-        // relationship user <--< comments
-        //public int? UserId { get;set; }
-        //public User User { get; set; }
+        //relationship user<--< comments
+        public string? UserId { get; set; }
+        [ForeignKey("UserId")]
+        public User User { get; set; }
 
     }
 }

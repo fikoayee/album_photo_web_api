@@ -5,10 +5,11 @@ using album_photo_web_api.Helper;
 using Microsoft.AspNetCore.Mvc;
 using album_photo_web_api.Dto;
 using Microsoft.EntityFrameworkCore;
+using album_photo_web_api.Data.Interfaces;
 
 namespace album_photo_web_api.Data.Services
 {
-    public class AlbumService
+    public class AlbumService : IAlbumService
     {
         private AppDbContext _context;
         public AlbumService(AppDbContext context)

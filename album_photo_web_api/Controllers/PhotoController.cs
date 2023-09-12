@@ -20,8 +20,8 @@ namespace album_photo_web_api.Controllers
     [ApiController]
     public class PhotoController : ControllerBase
     {
-        public PhotoService _photoService;
-        public static IWebHostEnvironment _webHostEnvironment;
+        private PhotoService _photoService;
+        private static IWebHostEnvironment _webHostEnvironment;
         public PhotoController(PhotoService photoService, IWebHostEnvironment webHostEnvironment)
         {
             _photoService = photoService;
@@ -58,7 +58,7 @@ namespace album_photo_web_api.Controllers
                     return Forbid();
                 return Ok(photo);
             }
-           
+
         }
 
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
@@ -83,7 +83,7 @@ namespace album_photo_web_api.Controllers
                     return Forbid();
             }
         }
-        
+
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
         [HttpDelete("delete-photo-by-id/{photoId}")] // 2. Usuwanie zdjęć
         public IActionResult DeletePhotoById(int photoId)
@@ -91,7 +91,7 @@ namespace album_photo_web_api.Controllers
             bool isAdmin = User.IsInRole("ADMIN");
             string currUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if(!_photoService.PhotoExists(photoId))
+            if (!_photoService.PhotoExists(photoId))
             {
                 return NotFound();
             }
@@ -191,16 +191,16 @@ namespace album_photo_web_api.Controllers
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var filteredPhotos = _photoService.GetPhotosByName(photoName);
 
-            if(filteredPhotos.Count == 0)
+            if (filteredPhotos.Count == 0)
                 return NotFound();
-            else 
+            else
             {
                 if (isAdmin)
                     filteredPhotos = filteredPhotos;
                 else
                     filteredPhotos = filteredPhotos.Where(p => p.Access == Data.AccessLevel.Public || p.UserId == userId).ToList();
             }
-            
+
 
             return Ok(filteredPhotos);
         }
@@ -246,9 +246,40 @@ namespace album_photo_web_api.Controllers
             }
         }
 
+        [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
+        [HttpPost("give-upvote/{photoId}")]
+        public IActionResult GiveUpvote(int photoId)
+        {
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var voteDetails = _photoService.GetVoteDetails(userId, photoId);
 
-        // 7. Zdjęcia można oceniać i dodać komentarz (oprócz własnych)
+            if (_photoService.PhotoExists(photoId) == false)
+                return NotFound();
+            else if (voteDetails == true)
+            {
+                _photoService.AddUpvote(photoId);
+                return Ok();
+            }
+            else
+                return Forbid();
+        }
 
+        [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
+        [HttpPost("give-downvote/{photoId}")]
+        public IActionResult GiveDownvote(int photoId)
+        {
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var voteDetails = _photoService.GetVoteDetails(userId, photoId);
 
+            if (_photoService.PhotoExists(photoId) == false)
+                return NotFound();
+            else if (voteDetails == true)
+            {
+                _photoService.AddDownvote(photoId);
+                return Ok();
+            }
+            else
+                return Forbid();
+        }
     }
 }

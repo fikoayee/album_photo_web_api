@@ -12,8 +12,8 @@ using album_photo_web_api.Data;
 namespace album_photo_web_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230911132156_d")]
-    partial class d
+    [Migration("20230912103104_gf")]
+    partial class gf
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -89,6 +89,7 @@ namespace album_photo_web_api.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -126,9 +127,6 @@ namespace album_photo_web_api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RatesId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Tags")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -141,8 +139,6 @@ namespace album_photo_web_api.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RatesId");
 
                     b.HasIndex("UserId");
 
@@ -164,7 +160,13 @@ namespace album_photo_web_api.Migrations
                     b.Property<bool>("IsRated")
                         .HasColumnType("bit");
 
+                    b.Property<int>("PhotoId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("PhotoId")
+                        .IsUnique();
 
                     b.ToTable("Rates");
                 });
@@ -434,30 +436,39 @@ namespace album_photo_web_api.Migrations
                     b.HasOne("album_photo_web_api.Models.Photo", "Photo")
                         .WithMany("Comments")
                         .HasForeignKey("PhotoId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("album_photo_web_api.Models.User", null)
+                    b.HasOne("album_photo_web_api.Models.User", "User")
                         .WithMany("Comments")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Photo");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("album_photo_web_api.Models.Photo", b =>
                 {
-                    b.HasOne("album_photo_web_api.Models.Rate", "Rates")
-                        .WithMany()
-                        .HasForeignKey("RatesId");
-
                     b.HasOne("album_photo_web_api.Models.User", "User")
                         .WithMany("Photos")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Rates");
-
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("album_photo_web_api.Models.Rate", b =>
+                {
+                    b.HasOne("album_photo_web_api.Models.Photo", "Photo")
+                        .WithOne("Rates")
+                        .HasForeignKey("album_photo_web_api.Models.Rate", "PhotoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Photo");
                 });
 
             modelBuilder.Entity("album_photo_web_api.Models.RefreshToken", b =>
@@ -532,6 +543,8 @@ namespace album_photo_web_api.Migrations
                     b.Navigation("AlbumsPhotos");
 
                     b.Navigation("Comments");
+
+                    b.Navigation("Rates");
                 });
 
             modelBuilder.Entity("album_photo_web_api.Models.User", b =>
