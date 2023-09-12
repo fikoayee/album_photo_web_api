@@ -150,7 +150,7 @@ namespace album_photo_web_api.Controllers
             else
                 return BadRequest();
         }
-        [HttpGet("get-album(s)-by-name")]
+        [HttpGet("get-album(s)-by-name/{albumName}")]
         public IActionResult GetAlbumsByName(string albumName)
         {
             bool isAdmin = User.IsInRole("ADMIN");
@@ -211,18 +211,18 @@ namespace album_photo_web_api.Controllers
                 return Ok(filteredAlbums);
             }
         }
-        [HttpPut("change-album-access")]
+
         [Authorize(Roles = UserRoles.User + "," + UserRoles.Admin)]
-        [HttpPut("change-album-access-level")]
-        public IActionResult ChangeAccess(int photoId)
+        [HttpPut("change-album-access-level/{albumId}")]
+        public IActionResult ChangeAccess(int albumId)
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             bool isAdmin = User.IsInRole("ADMIN");
 
-            if (!_albumService.AlbumExists(photoId) == false)
+            if (_albumService.AlbumExists(albumId) == false)
                 return NotFound();
-            else if (_albumService.HasPriveleges(photoId, userId, isAdmin))
-                return Ok(_albumService.ChangeAccessById(photoId));
+            else if (_albumService.HasPriveleges(albumId, userId, isAdmin))
+                return Ok(_albumService.ChangeAccessById(albumId));
             else
                 return Forbid();
         }
@@ -232,7 +232,7 @@ namespace album_photo_web_api.Controllers
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             bool isAdmin = User.IsInRole("ADMIN");
 
-            if (!_albumService.AlbumExists(albumId) == false)
+            if (_albumService.AlbumExists(albumId) == false)
                 return NotFound();
             else if (_albumService.HasPriveleges(albumId, userId, isAdmin))
                 return Ok(_albumService.ChangeAccessByIdForAll(albumId));
@@ -246,7 +246,7 @@ namespace album_photo_web_api.Controllers
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             bool isAdmin = User.IsInRole("ADMIN");
 
-            if (!_albumService.AlbumExists(albumId) == false)
+            if (_albumService.AlbumExists(albumId) == false)
                 return NotFound();
             else if (_albumService.HasPriveleges(albumId, userId, isAdmin))
                 return Ok(_albumService.DeleteAlbumWithPhotos(albumId));

@@ -14,7 +14,7 @@ namespace album_photo_web_api.Data.Interfaces
         public PhotoDto GetPhotoById(int photoId);
         public PhotoDto UpdatePhotoById(int photoId, PhotoUpdateVM photo, string userId);
         public void DeletePhotoById(int photoId);
-        public async Task UploadPhoto(IFormFile iFormFile, string path);
+        public Task UploadPhoto(IFormFile iFormFile, string path);
         public string GetPathByFileName(string fileName);
         public string GetPathByFileNameThumbnails(string fileName);
         public byte[] DownloadPhoto(string fileName);

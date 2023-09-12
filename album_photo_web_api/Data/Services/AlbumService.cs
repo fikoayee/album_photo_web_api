@@ -68,7 +68,7 @@ namespace album_photo_web_api.Data.Services
         public List<PhotoDto> GetAllPhotosFromAlbum(int albumId)
         {
             var photos = new List<PhotoDto>();
-            foreach (var albumPhoto in _context.AlbumsPhotos.Where(x => x.AlbumId == albumId).Include(p => p.Photo).Include(u => u.Photo.User))
+            foreach (var albumPhoto in _context.AlbumsPhotos.Where(x => x.AlbumId == albumId).Include(p => p.Photo).Include(c => c.Photo.Comments).Include(u => u.Photo.User))
             {
                 PhotoDto obj = new PhotoDto()
                 {
@@ -252,7 +252,7 @@ namespace album_photo_web_api.Data.Services
             else
                 return album.UserId;
         }
-        private Album GetAlbumByIdPriv(int albumId)
+        public Album GetAlbumByIdPriv(int albumId)
         {
             if (AlbumExists(albumId))
                 return _context.Albums.FirstOrDefault(c => c.Id == albumId);

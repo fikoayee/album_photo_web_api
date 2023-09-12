@@ -12,6 +12,7 @@ namespace album_photo_web_api.Data
             {
                 var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
                 context.Database.EnsureCreated();
+
                 context.SaveChanges();
             }
         }

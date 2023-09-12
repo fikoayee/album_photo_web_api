@@ -8,7 +8,7 @@ namespace album_photo_web_api.Dto
     {
         public int Id { get; set; } 
         public string Name { get; set; }
-        public List<string>? Tags { get; set; }
+        public string? Tags { get; set; }
         public string Camera { get; set; }
         public AccessLevel Access { get; set; }
         public string ImageName { get; set; }

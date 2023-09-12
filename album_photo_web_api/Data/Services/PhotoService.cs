@@ -74,7 +74,7 @@ namespace album_photo_web_api.Data.Services
         public List<PhotoDto> GetAllPhotos()
         {
             var photos = new List<PhotoDto>();
-            foreach (var p in _context.Photos.Include(u => u.User).ToList())
+            foreach (var p in _context.Photos.Include(u => u.User).Include(c => c.Comments).ToList())
             {
                 PhotoDto obj = new PhotoDto()
                 {
@@ -96,7 +96,7 @@ namespace album_photo_web_api.Data.Services
         }
         public PhotoDto GetPhotoById(int photoId)
         {
-            var photo = _context.Photos.Include(u => u.User).FirstOrDefault(c => c.Id == photoId);
+            var photo = _context.Photos.Include(u => u.User).Include(c => c.Comments).FirstOrDefault(c => c.Id == photoId);
             if (photo == null)
                 return null;
             else
