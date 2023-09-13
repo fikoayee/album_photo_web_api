@@ -2,6 +2,7 @@
 using album_photo_web_api.Data.ViewModels;
 using album_photo_web_api.Dto;
 using album_photo_web_api.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace album_photo_web_api.Data.Services
@@ -16,7 +17,7 @@ namespace album_photo_web_api.Data.Services
             _photoService = photoService;
         }
 
-        public async void AddComment(CommentVM comment, string userId, int photoId)
+        public async void AddComment([FromForm] CommentVM comment, string userId, int photoId)
         {
             var newComment = new Comment()
             {
@@ -37,7 +38,7 @@ namespace album_photo_web_api.Data.Services
         }
         public List<CommentDto> GetAllCommentsByPhoto(int photoId)
         {
-            var photo = _context.Photos.Include(u => u.User).Include(c => c.Comments).FirstOrDefault(p => p.Id == photoId);
+            var photo = _context.Photos.Include(c => c.Comments).Include(u => u.User).FirstOrDefault(p => p.Id == photoId);
             var comments = photo.Comments;
             var commentsDto = new List<CommentDto>();
             foreach (var comment in comments)
@@ -45,7 +46,7 @@ namespace album_photo_web_api.Data.Services
                 CommentDto obj = new CommentDto()
                 {
                     Id = comment.Id,
-                    Author = comment.User.UserName,
+                    Comment = comment.Comments,
                     AuthorId = comment.UserId
                 };
                 commentsDto.Add(obj);
@@ -71,7 +72,7 @@ namespace album_photo_web_api.Data.Services
                 CommentDto obj = new CommentDto()
                 {
                     Id = comment.Id,
-                    Author = comment.User.UserName,
+                    Comment = comment.Comments,
                     AuthorId = comment.User.Id
                 };
                 return (obj);

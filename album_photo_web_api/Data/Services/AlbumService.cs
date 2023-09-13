@@ -68,7 +68,7 @@ namespace album_photo_web_api.Data.Services
         public List<PhotoDto> GetAllPhotosFromAlbum(int albumId)
         {
             var photos = new List<PhotoDto>();
-            foreach (var albumPhoto in _context.AlbumsPhotos.Where(x => x.AlbumId == albumId).Include(p => p.Photo).Include(c => c.Photo.Comments).Include(u => u.Photo.User))
+            foreach (var albumPhoto in _context.AlbumsPhotos.Where(x => x.AlbumId == albumId).Include(p => p.Photo).Include(u => u.Photo.User))
             {
                 PhotoDto obj = new PhotoDto()
                 {
@@ -80,7 +80,6 @@ namespace album_photo_web_api.Data.Services
                     ImageName = albumPhoto.Photo.ImageName,
                     UpVotes = albumPhoto.Photo.UpVotes,
                     DownVotes = albumPhoto.Photo.DownVotes,
-                    Comments = albumPhoto.Photo.Comments,
                     User = albumPhoto.Photo.User.UserName,
                     UserId = albumPhoto.Photo.UserId,
                 };

@@ -22,7 +22,7 @@ namespace album_photo_web_api.Models
         // relationship photo ---< rates
         public int UpVotes { get; set; }
         public int DownVotes { get; set; }
-        public Rate? Rates { get; set; }
+        public List<Rate>? Rates { get; set; }
         
         // relationship photos >--< albums 
         public List<AlbumPhoto>? AlbumsPhotos { get; set; }

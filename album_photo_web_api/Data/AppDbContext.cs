@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace album_photo_web_api.Data
 {
-    public class AppDbContext :IdentityDbContext<User>
+    public class AppDbContext : IdentityDbContext<User>
     {
         public DbSet<Photo> Photos { get; set; }
         public DbSet<Album> Albums { get; set; }
@@ -33,6 +33,12 @@ namespace album_photo_web_api.Data
          .HasMany<Comment>(c => c.Comments)
          .WithOne(s => s.Photo)
          .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Photo>()
+                .HasMany<Rate>(r => r.Rates)
+                .WithOne(p => p.Photo);
+
+
 
             base.OnModelCreating(modelBuilder);
         }

@@ -38,7 +38,7 @@ namespace album_photo_web_api.Data.Services
                 Name = photo.Name,
                 Access = photo.Access,
                 Camera = photo.Camera,
-                Tags = photo.Tags.ToString(),
+                Tags = photo.Tags,
                 ImageFile = photo.ImageFile,
                 ImageName = fileName,
                 UserId = userId,
@@ -74,19 +74,18 @@ namespace album_photo_web_api.Data.Services
         public List<PhotoDto> GetAllPhotos()
         {
             var photos = new List<PhotoDto>();
-            foreach (var p in _context.Photos.Include(u => u.User).Include(c => c.Comments).ToList())
+            foreach (var p in _context.Photos.Include(u => u.User).ToList())
             {
                 PhotoDto obj = new PhotoDto()
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    //Tags = p.Tags,
+                    Tags = p.Tags,
                     Camera = p.Camera,
                     Access = p.Access,
                     ImageName = p.ImageName,
                     UpVotes = p.UpVotes,
                     DownVotes = p.DownVotes,
-                    Comments = p.Comments,
                     User = p.User.UserName,
                     UserId = p.UserId,
                 };
@@ -96,7 +95,7 @@ namespace album_photo_web_api.Data.Services
         }
         public PhotoDto GetPhotoById(int photoId)
         {
-            var photo = _context.Photos.Include(u => u.User).Include(c => c.Comments).FirstOrDefault(c => c.Id == photoId);
+            var photo = _context.Photos.Include(u => u.User).FirstOrDefault(c => c.Id == photoId);
             if (photo == null)
                 return null;
             else
@@ -105,13 +104,12 @@ namespace album_photo_web_api.Data.Services
                 {
                     Id = photo.Id,
                     Name = photo.Name,
-                    //Tags = photo.Tags,
+                    Tags = photo.Tags,
                     Camera = photo.Camera,
                     Access = photo.Access,
                     ImageName = photo.ImageName,
                     UpVotes = photo.UpVotes,
                     DownVotes = photo.DownVotes,
-                    Comments = photo.Comments,
                     User = photo.User.UserName,
                     UserId = photo.UserId,
                 };
@@ -128,7 +126,7 @@ namespace album_photo_web_api.Data.Services
                 photoUpd.Access = photo.Access;
                 photoUpd.Camera = photo.Camera;
                 photoUpd.UserId = userId;
-                photoUpd.Tags = photo.Tags.ToString();
+                photoUpd.Tags = photo.Tags;
 
                 _context.SaveChanges();
             }
@@ -300,15 +298,17 @@ namespace album_photo_web_api.Data.Services
         }
         public bool GetVoteDetails(string userId, int photoId)
         {
-            var vote = _context.Rates.Where(x => x.AuthorId == userId && x.PhotoId == photoId).FirstOrDefault();
+            var photo = GetPhotoByIdPriv(photoId);
+            var vote = _context.Rates.Where(x => x.AuthorId == userId && x.Photo.Id == photoId).FirstOrDefault();
             if (vote == null && PhotoExists(photoId) == true)
             {
                 var newVote = new Rate()
                 {
                     AuthorId = userId,
-                    PhotoId = photoId,
+                    Photo = photo,
                     IsRated = true,
                 };
+                var sprawdzam = GetPhotoByIdPriv(photoId);
                 _context.Rates.Add(newVote);
                 _context.SaveChanges();
                 return true;
@@ -317,9 +317,5 @@ namespace album_photo_web_api.Data.Services
                 return false;
 
         }
-
-
-
-
     }
 }

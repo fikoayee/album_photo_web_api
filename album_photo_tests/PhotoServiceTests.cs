@@ -115,7 +115,7 @@ namespace album_photo_tests
         {
             context.Database.EnsureDeleted();
         }
-
+        
         private void SeedDatabase()
         {
             var photos = new List<Photo>()

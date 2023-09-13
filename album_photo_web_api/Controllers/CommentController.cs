@@ -46,7 +46,7 @@ namespace album_photo_web_api.Controllers
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             bool isAdmin = User.IsInRole("ADMIN");
 
-            if (photo == null)
+            if (photo == null || string.IsNullOrWhiteSpace(comment.Comment) == true)
                 return BadRequest();
             else
             {
